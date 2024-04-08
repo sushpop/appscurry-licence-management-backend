@@ -1,0 +1,10 @@
+import { registerUser } from './registerUser'
+import { login } from './login'
+exports.registerUser = registerUser
+exports.login = login
+
+
+// TODO: Revisit following links: 
+// https://firebase.google.com/docs/functions/organize-functions?gen=2nd#index.js
+// https://medium.com/@george43g/organise-firebase-functions-part-1-optimize-cold-start-time-cd36f76d2133
+// Try to split the functions and code in microservices like features
