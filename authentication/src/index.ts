@@ -1,6 +1,6 @@
-import { registerUser } from './registerUser'
+import { registerUser } from '../registerUser'
 import { login } from './login'
-import { validateToken } from './validateToken'
+import { validateToken } from '../validateToken'
 exports.registerUser = registerUser
 exports.login = login
 exports.validateToken = validateToken

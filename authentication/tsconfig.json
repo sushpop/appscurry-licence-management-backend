@@ -10,6 +10,6 @@
   },
   "compileOnSave": true,
   "include": [
-    "src"
-  ]
+    "src",
+    "src/index.ts", "src/login.ts", "registerUser.ts", "validateToken.ts"  ]
 }

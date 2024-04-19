@@ -50,6 +50,6 @@ export const login = onCall( async (request) => {
     }
     // Generic Error
     console.error('Generic error for email:', email, error)
-    throw new HttpsError("failed-precondition", "Failed to login")
+    throw new HttpsError('failed-precondition', 'Failed to login')
   }
 })
