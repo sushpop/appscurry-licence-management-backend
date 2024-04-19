@@ -1,7 +1,8 @@
 import {onCall, HttpsError} from 'firebase-functions/v2/https'
-import { initializeApp} from 'firebase-admin/app'
-import { CreateRequest, UserRecord, getAuth,  } from 'firebase-admin/auth'
+// import { initializeApp} from 'firebase-admin/app'
+import { CreateRequest, UserRecord, getAuth } from 'firebase-admin/auth'
 import type { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
+import { initializeApp } from 'firebase-admin/app'
 
 
 // TODO: Revisit following links: 
@@ -10,12 +11,14 @@ import type { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
 
 // Try to split the functions and code in microservices like features
 
+
 initializeApp()
 
 export const registerUser = onCall( async (request) => {
   
   // TODO: Have a shared type between frontend and backend?
   const { email, password } = request.data
+  console.info('Request:', request)
   console.info('email:', email)  
   console.info('password:', password)  
 

@@ -1,8 +1,9 @@
 import { registerUser } from './registerUser'
 import { login } from './login'
+import { validateToken } from './validateToken'
 exports.registerUser = registerUser
 exports.login = login
-
+exports.validateToken = validateToken
 
 // TODO: Revisit following links: 
 // https://firebase.google.com/docs/functions/organize-functions?gen=2nd#index.js
