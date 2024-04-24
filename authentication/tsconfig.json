@@ -11,5 +11,5 @@
   "compileOnSave": true,
   "include": [
     "src",
-    "src/index.ts", "src/login.ts", "registerUser.ts", "validateToken.ts"  ]
+    "src/index.ts", "src/login.ts", "src/registerUser.ts", "src/validateToken.ts"  ]
 }

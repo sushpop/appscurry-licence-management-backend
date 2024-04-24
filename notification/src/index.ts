@@ -1,19 +1,11 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * import {onCall} from "firebase-functions/v2/https";
- * import {onDocumentWritten} from "firebase-functions/v2/firestore";
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+import { initiateEmailVerification, autoInitiateEmailVerification, verifyEmail, verifyEmailTest } from './emailVerification'
+exports.verifyEmail = verifyEmail
+exports.initiateEmailVerification = initiateEmailVerification
+exports.autoInitiateEmailVerification = autoInitiateEmailVerification
+exports.verifyEmailTest = verifyEmailTest
 
-import {onRequest} from "firebase-functions/v2/https";
-import * as logger from "firebase-functions/logger";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
-
-export const helloWorld = onRequest((request, response) => {
-  logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase! - notification powered by sendGrid");
-});
+// TODO: Revisit following links: 
+// https://firebase.google.com/docs/functions/organize-functions?gen=2nd#index.js
+// https://medium.com/@george43g/organise-firebase-functions-part-1-optimize-cold-start-time-cd36f76d2133
+// Try to split the functions and code in microservices like features

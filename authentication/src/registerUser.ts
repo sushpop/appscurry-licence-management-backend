@@ -1,5 +1,4 @@
 import {onCall, HttpsError} from 'firebase-functions/v2/https'
-// import { initializeApp} from 'firebase-admin/app'
 import { CreateRequest, UserRecord, getAuth } from 'firebase-admin/auth'
 import type { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
 import { initializeApp } from 'firebase-admin/app'
