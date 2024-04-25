@@ -15,35 +15,13 @@ import * as functions from 'firebase-functions/v1'
 import { getAuth } from 'firebase-admin/auth'
 
 import * as crypto  from 'crypto';
+import { initializeApp } from "firebase-admin/app"
 
 
 // TODO: Move this to env
 const SECRET_KEY = 'very_strong_secret_key_here'; 
 
-
-
-// // Start writing functions
-// // https://firebase.google.com/docs/functions/typescript
-
-
-// export const tokenCreation = onRequest((req, res) => {
-//   const userId = '1234asdf'
-//   const token = generateVerificationToken(userId)
-//   console.log('generatedToken', token)
-
-//   // const isTokenValid = verifyVerificationToken(token)
-//   // console.log('isTokenValid ==', isTokenValid)
-//   res.send('Done')
-
-// });
-
-// export const tokenValidation = onRequest((req, res) => {
-//   const token: string = req.param('token')!
-//   const isTokenValid = verifyVerificationToken(token)
-//   console.log('isTokenValid ==', isTokenValid)
-//   res.send('Done')
-
-// });
+initializeApp()
 
 // TODO
 export const initiateEmailVerification = onCall( async (request) => {

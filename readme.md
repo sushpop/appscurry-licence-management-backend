@@ -5,6 +5,11 @@ Create new microservice in this monorepo
 4] 
 
 
+firebase login
+
+firebase init
+
+
 
 Deploy all functions from the repo
 firebase deploy --only functions 

@@ -1,8 +1,11 @@
 import { registerUser } from './registerUser'
-import { login } from './login'
+// TODO: DEPRECATION
+// import { login } from './login'
+
+// TODO: DEPRECATION - POTENTIAL
 import { validateToken } from './validateToken'
 exports.registerUser = registerUser
-exports.login = login
+// exports.login = login
 exports.validateToken = validateToken
 
 // TODO: Revisit following links: 
