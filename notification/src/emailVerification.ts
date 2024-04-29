@@ -9,10 +9,10 @@
 
 import { onCall, onRequest } from "firebase-functions/v2/https"
 import * as logger from "firebase-functions/logger"
-import { MailtrapClient, SendResponse } from 'mailtrap'
+import { MailtrapClient } from 'mailtrap'
 import * as functions from 'firebase-functions/v1'
 
-import { getAuth } from 'firebase-admin/auth'
+import { UserRecord, getAuth } from 'firebase-admin/auth'
 
 import * as crypto  from 'crypto';
 import { initializeApp } from "firebase-admin/app"
@@ -34,19 +34,26 @@ export const initiateEmailVerification = onCall( async (request) => {
 
   // TODO: Have a shared type between frontend and backend?
   // TODO: Do not have a displayName yet on the first screen, I guess we should have it
-  const { email, displayName } = request.data  
-  console.info('email:', email)  
-  console.info('displayName:', displayName)  
+  const { userId } = request.data  
+  // console.info('email:', email)  
+  // console.info('displayName:', displayName)  
   
 
   try {
-    const mailSend: SendResponse = await sendEmail(email, displayName)
-    mailSend.message_ids
+    
+    const user: UserRecord = await getAuth().getUser(userId)
+    const email: string = user.email!
+    const displayName: string = user.displayName!
+
+    const secureToken = generateVerificationToken(userId)
+
+    await sendEmail(email, displayName, secureToken)
+    
     return {
       status: "success"
     }
   }  catch(error) {
-    console.log("error while sending verification mail to ", email, error)
+    console.log("error while sending verification mail to userid: ", userId)
     return {
       status: "failure"
     }
@@ -65,12 +72,13 @@ export const autoInitiateEmailVerification = functions.auth.user().onCreate(asyn
   // const email = user.email!
   const email = 'sushpop@gmail.com';
   console.log('Triggering email for user:', user.email!)
-  try {
+  try {    
     const secureToken = generateVerificationToken(userId)
     console.log('Token: ', secureToken, 'for userId:', userId)
-    const mailSend = await sendEmail(email, displayName)
+    const mailSend = await sendEmail(email, displayName, secureToken)
     return mailSend
   }  catch(error) {
+    console.error('Failed to send verification email to:', email)
     return error
   }
     
@@ -161,7 +169,7 @@ function verifyToken(token: string) {
 
 // email sender integration
 // username -> make it mandatory when UI is changed
-async function sendEmail(userEmail: string, username: string | undefined) {
+async function sendEmail(userEmail: string, username: string | undefined, secureToken: string) {
 
   const TOKEN = "12b856e48f8baa425115a37a9a247e59";
 
@@ -179,13 +187,15 @@ async function sendEmail(userEmail: string, username: string | undefined) {
     }
   ];
 
+  const link = "https://verifyemailtest-rgcespecra-uc.a.run.app/?token=" + secureToken
+
  try {
   const response = await client
   .send({
     from: sender,
     to: recipients,
     subject: "You are awesome!",
-    text: "Congrats for sending test email with Mailtrap!",
+    text: "Hi, Congrats for sending test email with Mailtrap!" + "\n" + link,
     category: "Integration Test",
   })
   return response
