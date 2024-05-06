@@ -16,12 +16,14 @@ initializeApp()
 export const registerUser = onCall( async (request) => {
   
   // TODO: Have a shared type between frontend and backend?
-  const { email, password } = request.data
+  const { displayName, email, password } = request.data
   console.info('Request:', request)
+  console.info('displayName:', displayName)
   console.info('email:', email)  
   console.info('password:', password)  
 
   const properties: CreateRequest = {
+    displayName: displayName,
     email: email,
     emailVerified: false,
     password: password
@@ -37,7 +39,7 @@ export const registerUser = onCall( async (request) => {
 
   } catch(error) {
     // TODO: For lack of better support from firebase library on this one as of version 11.11.1, we need following workaround.
-    // There open issue for this: https://github.com/firebase/firebase-admin-node/issues/1666
+    // There is open issue for this: https://github.com/firebase/firebase-admin-node/issues/1666
     // Once it is addressed, Pull the fixed version of firebase-admin sdk and update following code.
     
     if(isFirebaseAuthError(error)) {
