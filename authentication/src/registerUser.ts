@@ -3,25 +3,13 @@ import { CreateRequest, UserRecord, getAuth } from 'firebase-admin/auth'
 import type { FirebaseAuthError } from 'firebase-admin/lib/utils/error'
 import { initializeApp } from 'firebase-admin/app'
 
-
-// TODO: Revisit following links: 
-// https://firebase.google.com/docs/functions/organize-functions?gen=2nd#index.js
-// https://medium.com/@george43g/organise-firebase-functions-part-1-optimize-cold-start-time-cd36f76d2133
-
-// Try to split the functions and code in microservices like features
-
-
 initializeApp()
 
 export const registerUser = onCall( async (request) => {
   
-  // TODO: Have a shared type between frontend and backend?
   const { displayName, email, password } = request.data
-  console.info('Request:', request)
-  console.info('displayName:', displayName)
-  console.info('email:', email)  
-  console.info('password:', password)  
-
+  console.info('Registering user with email:', email)   
+  
   const properties: CreateRequest = {
     displayName: displayName,
     email: email,
@@ -30,9 +18,8 @@ export const registerUser = onCall( async (request) => {
   }
 
   try {
-    const userDetails: UserRecord = await getAuth().createUser(properties)  
-    //TODO: Disable when migrating to production
-    console.log('Show me what you\'ve got :', userDetails)
+    const userDetails: UserRecord = await getAuth().createUser(properties)      
+    console.log('User created with email:', userDetails)
     return {
       status: "success"
     }
@@ -48,7 +35,7 @@ export const registerUser = onCall( async (request) => {
         throw new HttpsError('already-exists', 'Email is already registered in the application')
       }
       if (error.code === 'auth/auth/invalid-password') {
-        console.error('Password restrictions not followed for email', email)
+        console.error('Password restrictions not followed for email:', email)
         throw new HttpsError('invalid-argument', 'Password does not meet the criteria.')
       }         
     }
