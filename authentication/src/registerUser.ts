@@ -19,7 +19,7 @@ export const registerUser = onCall( async (request) => {
 
   try {
     const userDetails: UserRecord = await getAuth().createUser(properties)      
-    console.log('User created with email:', userDetails)
+    console.log('User created with email:', userDetails.email!)
     return {
       status: "success"
     }
