@@ -1,9 +1,5 @@
 Create new microservice in this monorepo
-1] create a folder at rool level with name of the service "serviceA" eg.
-2] cd serviceA && firebase init functions
-3] you now have a microservice initializedwith packgae
-4] 
-
+ firebase init functions
 
 firebase login
 
