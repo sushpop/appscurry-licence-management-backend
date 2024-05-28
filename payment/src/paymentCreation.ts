@@ -1,26 +1,18 @@
 import { onCall } from "firebase-functions/v2/https"
-
-import { initializeApp } from 'firebase-admin/app'
-import { getFirestore, FieldValue, } from 'firebase-admin/firestore'
-
-import Stripe from 'stripe';
-// This is your test secret API key.
-const stripe = require("stripe")('sk_test_51PC49AJnK8YalHcBQrlAcRZFwWlvPFAoA7ASM9b0Mn97hXUZGVoOO3hHDPEZTHhHb7qR92XvsNWIuhTEwwKymI0I00qQEXKR3B');
+import { db, stripe } from "./shared"
+import { FieldValue } from "firebase-admin/firestore";
+import Stripe from "stripe";
 
 // 2 Types of payment Events: REGISTRATION and PURCHASE
 const REGISTRATION: string = 'registration'
 const PURCHASE: string = 'purchase'
 
-initializeApp();
-const db = getFirestore("appscurry-licence-management");
-db.settings({ ignoreUndefinedProperties: true }); // ignores undefined peroperties during serializtion
-
-
-
 export const initiatePayment = onCall( async (request) => {
   let uid
   try {
-    uid = request.auth?.uid
+
+    uid = request.auth?.uid!    // This shuold throw error is uid is missing?
+
     console.log('Create payment intent strated for:', uid)
 
     const type = request.data.type as string
@@ -120,7 +112,7 @@ async function insertData(intentId: string, uid: string, type:string, amount: nu
     timestamp: FieldValue.serverTimestamp()
   }
   console.log('inserting', data)
-  return await db.collection('payment').doc(intentId).set(data);
+  return await db.collection('payment_initiated').doc(intentId).set(data);
 }
 
 async function createPaymentIntent(amount: number, description: string, currency: string) {
