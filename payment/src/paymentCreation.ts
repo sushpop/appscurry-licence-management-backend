@@ -1,11 +1,8 @@
 import { onCall } from "firebase-functions/v2/https"
-import { db, stripe } from "./shared"
+import { db, stripe, REGISTRATION, PURCHASE } from "./shared"
 import { FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
-// 2 Types of payment Events: REGISTRATION and PURCHASE
-const REGISTRATION: string = 'registration'
-const PURCHASE: string = 'purchase'
 
 export const initiatePayment = onCall( async (request) => {
   let uid
@@ -104,7 +101,7 @@ function validatePricing(type: string, amount: number, quantity: number | undefi
 }
 
 async function insertData(intentId: string, uid: string, type:string, amount: number, quantity: number) {
-  const data = {
+  const data: PaymentInitiated = {
     uid: uid,
     type: type,
     amount: amount,
@@ -134,4 +131,12 @@ interface Pricing {
   currency: string
   registration: number
   purchase: Tier
+}
+
+interface PaymentInitiated {
+  amount: number
+  type: string
+  uid: string
+  quantity: number
+  timestamp: FieldValue
 }

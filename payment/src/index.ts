@@ -1,5 +1,5 @@
 import { initiatePayment } from './paymentCreation'
-import { paymentWebHook } from './paymentProcessor'
+import { paymentWebHook } from './paymentReconciliation'
 
 exports.initiatePayment = initiatePayment
 exports.paymentWebHook = paymentWebHook

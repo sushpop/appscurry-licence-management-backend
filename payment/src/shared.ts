@@ -1,4 +1,3 @@
-// TODO: Move firebase initialization to generic function
 import { initializeApp } from 'firebase-admin/app'
 import { getFirestore } from 'firebase-admin/firestore'
 initializeApp();
@@ -7,4 +6,10 @@ db.settings({ ignoreUndefinedProperties: true }); // ignores undefined peroperti
 
 const stripe = require("stripe")('sk_test_51PC49AJnK8YalHcBQrlAcRZFwWlvPFAoA7ASM9b0Mn97hXUZGVoOO3hHDPEZTHhHb7qR92XvsNWIuhTEwwKymI0I00qQEXKR3B');
 
-export { db, stripe }
+// 2 Types of payment Events: REGISTRATION and PURCHASE
+const REGISTRATION: string = 'registration'
+const PURCHASE: string = 'purchase'
+
+export { db, stripe, REGISTRATION, PURCHASE }
+
+
