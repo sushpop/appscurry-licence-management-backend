@@ -1,5 +1,5 @@
 import { onCall } from "firebase-functions/v2/https"
-import { db, stripe, REGISTRATION, PURCHASE } from "./shared"
+import { db, stripe, Pricing, Tier, PaymentInitiated, REGISTRATION, PURCHASE } from "./shared"
 import { FieldValue } from "firebase-admin/firestore";
 import Stripe from "stripe";
 
@@ -121,22 +121,4 @@ async function createPaymentIntent(amount: number, description: string, currency
   })  
   console.log('paymentIntent', paymentIntent)
   return paymentIntent
-}
-
-interface Tier {
-  [quantity: number]: number;
-}
-
-interface Pricing {
-  currency: string
-  registration: number
-  purchase: Tier
-}
-
-interface PaymentInitiated {
-  amount: number
-  type: string
-  uid: string
-  quantity: number
-  timestamp: FieldValue
 }

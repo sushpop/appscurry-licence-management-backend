@@ -1,5 +1,5 @@
 import { onRequest } from "firebase-functions/v2/https"
-import { db, stripe, PURCHASE } from "./shared"
+import { db, stripe, PaymentInitiated, CustomerPayment, SummaryDocument, PURCHASE, SUMMARY, LINE_ITEM } from "./shared"
 import { FieldValue } from "firebase-admin/firestore"
 import Stripe from "stripe"
 
@@ -85,7 +85,9 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
       status: 'success',
       receiptUrl: receiptUrl,
       createTime: FieldValue.serverTimestamp(),
-      receiptNumber: undefined // Parse receipt and populate this
+      docType: LINE_ITEM,
+      receiptNumber: undefined, // Parse receipt and populate this
+      slReceiptUrl: undefined
     }
     console.log('inserting', paymentData, userId)
   
@@ -93,16 +95,24 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
 
     // Create payment line item
     const customerPaymentRef = db.collection('customers').doc(userId).collection('payment').doc(intentId)
-    batch.set(customerPaymentRef, paymentData, {merge: true}) // TODO: technically no need for merge as it is going to be insert only opertion
+    batch.set(customerPaymentRef, paymentData, {merge: true})
   
     // Update payment summary
-    const customerPaymentSummaryRef = db.collection('customers').doc(userId).collection('payment').doc('summary')    
-    batch.set(customerPaymentSummaryRef, {total: FieldValue.increment(paymentData.amount)}, {merge: true})
+    const customerPaymentSummaryRef = db.collection('customers').doc(userId).collection('payment').doc('summary')   
+    const paymentSummary: SummaryDocument = {
+      total: FieldValue.increment(paymentData.amount),
+      docType: SUMMARY
+    }  
+    batch.set(customerPaymentSummaryRef, paymentSummary, {merge: true})
   
     // Update payment summary in case type is purchase
     if(paymentData.type.toLowerCase() === PURCHASE) {
       const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')    
-      batch.set(customerLicencesSummaryRef, {total: FieldValue.increment(paymentData.quantity)}, {merge: true})
+      const licenceSummary: SummaryDocument = {
+        total: FieldValue.increment(paymentData.quantity),
+        docType: SUMMARY
+      }  
+      batch.set(customerLicencesSummaryRef, licenceSummary, {merge: true})
     }
     
     // Delete entry from the payment_initiated
@@ -115,22 +125,4 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
     console.error('Error while reconcilePayment', error)
     return false
   }
-}
-
-interface PaymentInitiated {
-  amount: number
-  type: string
-  uid: string
-  quantity: number
-  timestamp: FieldValue
-}
-
-interface CustomerPayment {
-  amount: number
-  type: string
-  quantity: number
-  receiptUrl: string
-  status: string,
-  createTime: FieldValue
-  receiptNumber: string | undefined
 }
