@@ -31,8 +31,15 @@ interface PaymentInitiated {
   timestamp: FieldValue
 }
 
-interface SummaryDocument {
+interface PaymentSummary {
   total: FieldValue
+  docType: string
+}
+
+interface LicenceSummary {
+  available: FieldValue | undefined,
+  pending: FieldValue | undefined,
+  active: FieldValue | undefined,
   docType: string
 }
 
@@ -48,6 +55,6 @@ interface CustomerPayment {
   slReceiptUrl: string | undefined
 }
 
-export { db, stripe, Pricing, Tier, PaymentInitiated, SummaryDocument, CustomerPayment,  REGISTRATION, PURCHASE, SUMMARY, LINE_ITEM, DB_NAME }
+export { db, stripe, Pricing, Tier, PaymentInitiated, PaymentSummary, LicenceSummary, CustomerPayment,  REGISTRATION, PURCHASE, SUMMARY, LINE_ITEM, DB_NAME }
 
 

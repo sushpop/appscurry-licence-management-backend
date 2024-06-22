@@ -7,12 +7,12 @@ const DB_NAME = "appscurry-licence-management"
 const db = getFirestore(DB_NAME)
 db.settings({ ignoreUndefinedProperties: true }); // ignores undefined peroperties during serializtion
 
-// const SUMMARY = 'summary'
+const SUMMARY = 'summary'
 // const LINE_ITEM = 'line_item'
 const PENDING = 'pending'
 // const ASSIGNED = 'assigned'
 // const EXPIRED = 'expired'
-
+// const AVAILABLE_LICENCE_COUNT = "available"
 
 export const assignLicence = onCall( async (request) => {
 
@@ -80,8 +80,14 @@ async function processInvitation(invitation: Invitation, userId: string) {
   batch.set(licenceRef, licenceData, {merge: true})
 
   // Decrement Licence count  
+  const lincenceSummary: LicenceSummary = {
+    available: FieldValue.increment(-1),
+    pending: FieldValue.increment(1),
+    active: undefined,
+    docType: SUMMARY
+  } // undefined fields will not be inserted into db because ignoreUndefinedProperties is set to true
   const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')      
-  batch.set(customerLicencesSummaryRef, {total: FieldValue.increment(-1)}, {merge: true})
+  batch.set(customerLicencesSummaryRef, lincenceSummary, {merge: true})
   
   // Commit the batch
   await batch.commit()
@@ -112,7 +118,9 @@ interface Licence {
   status: string;
 }
 
-// interface SummaryDocument {
-//   total: FieldValue
-//   docType: string
-// }
+interface LicenceSummary {
+  available: FieldValue | undefined,
+  pending: FieldValue | undefined,
+  active: FieldValue | undefined,
+  docType: string
+}

@@ -1,5 +1,5 @@
 import { onRequest } from "firebase-functions/v2/https"
-import { db, stripe, PaymentInitiated, CustomerPayment, SummaryDocument, PURCHASE, SUMMARY, LINE_ITEM } from "./shared"
+import { db, stripe, PaymentInitiated, CustomerPayment, PaymentSummary, LicenceSummary, PURCHASE, SUMMARY, LINE_ITEM } from "./shared"
 import { FieldValue } from "firebase-admin/firestore"
 import Stripe from "stripe"
 
@@ -99,7 +99,7 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
   
     // Update payment summary
     const customerPaymentSummaryRef = db.collection('customers').doc(userId).collection('payment').doc('summary')   
-    const paymentSummary: SummaryDocument = {
+    const paymentSummary: PaymentSummary = {
       total: FieldValue.increment(paymentData.amount),
       docType: SUMMARY
     }  
@@ -108,10 +108,12 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
     // Update payment summary in case type is purchase
     if(paymentData.type.toLowerCase() === PURCHASE) {
       const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')    
-      const licenceSummary: SummaryDocument = {
-        total: FieldValue.increment(paymentData.quantity),
+      const licenceSummary: LicenceSummary = {
+        available: FieldValue.increment(paymentData.quantity),
+        pending: undefined,
+        active: undefined,
         docType: SUMMARY
-      }  
+      }   // ignoreUndefinedProperties is set to true on DB, which updates only non undefined values. 
       batch.set(customerLicencesSummaryRef, licenceSummary, {merge: true})
     }
     
