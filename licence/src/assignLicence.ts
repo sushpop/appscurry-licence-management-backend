@@ -73,11 +73,11 @@ async function processInvitation(invitation: Invitation, userId: string) {
 
   // Create document in customers/lincence scope
   const customersLicenceRef = db.collection('customers').doc(userId).collection('licence').doc(invitation.email)
-  batch.set(customersLicenceRef, licenceData, {merge: true})
+  batch.create(customersLicenceRef, licenceData)
 
   // Create document in licence collection
   const licenceRef = db.collection('licence').doc(invitation.email)
-  batch.set(licenceRef, licenceData, {merge: true})
+  batch.create(licenceRef, licenceData)
 
   // Decrement Licence count  
   const lincenceSummary: LicenceSummary = {
@@ -88,7 +88,7 @@ async function processInvitation(invitation: Invitation, userId: string) {
   } // undefined fields will not be inserted into db because ignoreUndefinedProperties is set to true
   const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')      
   batch.set(customerLicencesSummaryRef, lincenceSummary, {merge: true})
-  
+
   // Commit the batch
   await batch.commit()
 

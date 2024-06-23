@@ -110,8 +110,8 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
       const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')    
       const licenceSummary: LicenceSummary = {
         available: FieldValue.increment(paymentData.quantity),
-        pending: undefined,
-        active: undefined,
+        pending: FieldValue.increment(0),
+        active: FieldValue.increment(0),
         docType: SUMMARY
       }   // ignoreUndefinedProperties is set to true on DB, which updates only non undefined values. 
       batch.set(customerLicencesSummaryRef, licenceSummary, {merge: true})
