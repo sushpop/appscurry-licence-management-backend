@@ -2,10 +2,11 @@ import { onCall } from "firebase-functions/v2/https"
 import * as functions from 'firebase-functions/v1'
 import { ActionCodeSettings, getAuth } from 'firebase-admin/auth'
 import { initializeApp } from "firebase-admin/app"
-
-import { MailtrapClient } from 'mailtrap'
-
 initializeApp()
+
+import { ServerClient } from 'postmark'
+const EMAIL_API_KEY = 'ed22529f-dfc2-4102-9323-f706b95ad444'
+var client = new ServerClient(EMAIL_API_KEY)
 
 const actionCodeSettings = {
   url: 'https://appscurry-licence-management.web.app/authenticate'
@@ -68,35 +69,24 @@ async function generateAndPublishVerificationEmail(email: string, displayName: s
     
 }
 
-async function sendEmail(userEmail: string, username: string | undefined, link: string) {
+async function sendEmail(userEmail: string, username: string, link: string) {
 
-  const TOKEN = "12b856e48f8baa425115a37a9a247e59";
-
-  const client = new MailtrapClient({ token: TOKEN });
-
-  const sender = {
-    email: "mailtrap@demomailtrap.com",
-    name: "Mailtrap Test",
-  };
-  const recipients = [
-    {
-      email: userEmail,
-    }
-  ];
-
- try {
-  const response = await client
-  .send({
-    from: sender,
-    to: recipients,
-    subject: "You are awesome!",
-    text: "Hi, Congrats for sending test email with Mailtrap!" + "\n" + link,
-    category: "Integration Test",
-  })
-  return response
+  try {
+    const response = await client.sendEmailWithTemplate({
+      "From": "sushpop@appscurry.com",
+      "To": userEmail,
+      "TemplateId": 36373166,
+      "TemplateAlias": 'welcome',
+      "TemplateModel": {
+        "name": username,
+        "product_name": "SnorelabPro",
+        "action_url": link        
+      }
+    })
+    return response
   } catch(error) {
-  // Generic Error
-    console.error('Error sending email:', error)  
-    throw new Error()
+    // Generic Error
+      console.error('Error sending email:', error)  
+      throw new Error()
   }
 }
