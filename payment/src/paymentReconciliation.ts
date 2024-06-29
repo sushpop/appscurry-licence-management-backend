@@ -105,7 +105,7 @@ async function reconcilePayment(intentId: string, receiptUrl: string): Promise<b
     }  
     batch.set(customerPaymentSummaryRef, paymentSummary, {merge: true})
   
-    // Update payment summary in case type is purchase
+    // Update licence summary in case type is purchase
     if(paymentData.type.toLowerCase() === PURCHASE) {
       const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')    
       const licenceSummary: LicenceSummary = {
