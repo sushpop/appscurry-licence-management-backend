@@ -1,4 +1,4 @@
-import { onRequest } from "firebase-functions/v2/https"
+import { Request, onRequest } from "firebase-functions/v2/https"
 import { ASSIGNED, db, Licence, TopLevelLicence, LicenceSummary, SUMMARY } from "./shared"
 import { Timestamp, FieldValue } from "firebase-admin/firestore"
 
@@ -7,38 +7,16 @@ const APP_KEY = "awesome" //TODO: Move this to config | functions:config:set app
 const MAX_ALLOWED_DEVICES = 3;
 
 export const acceptLicence = onRequest( async (request, response) => {
-  let email = ''  
+  let licenceId = ''  
 
   try {
-    const request_key = request.get('authorization');
-    email = request.body.email;
-    const deviceId = request.body.deviceId;
-
-    console.log('request_key:', request_key)
-    console.log('email:', email)
-    console.log('deviceId', deviceId)
-
-    // TODO: Refactor
-    if(APP_KEY !== request_key) {  
-      console.error('Security Key does not match or does not exists')    
-      response.status(400).send({ error: 'Invalid Input' })      
-      return 
-    }    
-    if(request.method !== "POST") {
-      console.error(`wrong method: ${request.method}`)
-      response.status(400).send({ error: 'Invalid Input' })   
-      return 
-    }    
-    if(!email) {      
-      console.error('Missing email')
-      response.status(400).send({ error: 'Missing Field' })
-      return 
+    const {errorMessage, email, deviceId} = extractDataFromValidRequest(request)    
+    licenceId = email
+    
+    if(errorMessage) {
+      response.status(400).send({ error: errorMessage })
+      return
     }
-    if(!deviceId) {      
-      console.error('Missing deviceId')
-      response.status(400).send({ error: 'Missing Field' })
-      return 
-    }      
     
     const topLevelLicence = await getTopLevelLicence(email)
 
@@ -55,16 +33,39 @@ export const acceptLicence = onRequest( async (request, response) => {
       return
     }
 
-    await processInvitation(topLevelLicence!, deviceId);
+    await acceptInvitation(topLevelLicence!, deviceId);
     response.status(200).send('Success')
     return 
   }  catch (error) {
-    console.error(`Error processing acceptLicence API request for email: ${email} with error`, error )
+    console.error(`Error processing acceptLicence API request for email: ${licenceId} with error`, error )
     response.status(400).send('Invalid Request')    
     return
   }    
-
 })
+
+function extractDataFromValidRequest(request: Request) {
+    const request_key = request.get('authorization');
+    const email = request.body.email;
+    const deviceId = request.body.deviceId;
+    console.log('request_key:', request_key)
+    console.log('email:', email)
+    console.log('deviceId', deviceId)
+    
+    let errorMessage = undefined
+
+    
+    if(APP_KEY !== request_key) {  
+      console.error('Security Key does not match or does not exists')    
+      errorMessage = 'Invalid Security Header'
+    } else if(!email) {      
+      console.error('Missing email') 
+      errorMessage = 'Missing field - email'           
+    } else if(!deviceId) {      
+      console.error('Missing deviceId')            
+      errorMessage = 'Missing field - deviceId'           
+    }      
+    return {errorMessage, email, deviceId}
+}
 
 async function getTopLevelLicence(emailId: string) {
   try { 
@@ -83,8 +84,7 @@ async function getTopLevelLicence(emailId: string) {
   
 }
 
-
-async function processInvitation(topLevelLicence: TopLevelLicence, deviceId: string) {
+async function acceptInvitation(topLevelLicence: TopLevelLicence, deviceId: string) {
   try {    
     const customerId = topLevelLicence.customerId
     const licenceId = topLevelLicence.email
@@ -114,14 +114,14 @@ async function processInvitation(topLevelLicence: TopLevelLicence, deviceId: str
       // Do not update activation and validity dates if this is not the first device the licence is being installed on 
       licenceData = {    
         email: licenceId,
-        invitedOn: undefined, // No need to update
-        activatedOn: undefined, // No need to update 
-        validTill: undefined, // No need to update
+        invitedOn: undefined,
+        activatedOn: undefined,
+        validTill: undefined,
         status: ASSIGNED
       }
-  
-      topLevelLicence.activatedOn = undefined // Do not need to update the existing values
-      topLevelLicence.validTill = undefined // Do not need to update the existing values    
+      // Do not need to update the existing values
+      topLevelLicence.activatedOn = undefined 
+      topLevelLicence.validTill = undefined 
     }
     
     // Only if the device id is new, append it to the list
@@ -141,6 +141,7 @@ async function processInvitation(topLevelLicence: TopLevelLicence, deviceId: str
     // TODO: DEBUG REMOVE
     console.log(licenceData)
     console.log(topLevelLicence)
+
     const batch = db.batch()
   
     // update customer licence collection
@@ -151,7 +152,7 @@ async function processInvitation(topLevelLicence: TopLevelLicence, deviceId: str
     const topLevelLicenceRef = db.collection('topLevelLicence').doc(licenceId)
     batch.set(topLevelLicenceRef, topLevelLicence, {merge: true})
   
-    if(isFirstDevice) {
+    if(isFirstDevice) { // Adjust counts only if it is first device
       // undefined fields will not be inserted into db because ignoreUndefinedProperties is set to true  
       const customerLicencesSummaryRef = db.collection('customers').doc(customerId).collection('licence').doc('summary')      
       batch.set(customerLicencesSummaryRef, lincenceSummary, {merge: true})
@@ -160,7 +161,6 @@ async function processInvitation(topLevelLicence: TopLevelLicence, deviceId: str
     batch.commit()
   
     console.log("License document updated successfully.");
-
     return true
   } catch (error) {
     console.error(`Something went wrong while processingInvitation for ${topLevelLicence.email}`)
