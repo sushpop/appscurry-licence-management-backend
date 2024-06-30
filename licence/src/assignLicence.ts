@@ -45,6 +45,7 @@ export const assignLicence = onCall( async (request) => {
   }
 })
 
+// TODO: Check if available licence is 0 and do not process ... 
 async function processInvitation(invitation: Invitation, userId: string) {
 
   const currentDate = new Date();
@@ -53,17 +54,17 @@ async function processInvitation(invitation: Invitation, userId: string) {
     email: invitation.email,
     invitedOn: Timestamp.fromDate(currentDate),
     status: PENDING,
-    acceptedOn: undefined,
+    activatedOn: undefined,
     validTill: undefined
   }
 
   const topLevelLicenceData : TopLevelLicence = {
     email: invitation.email,
-    userId: userId, 
+    customerId: userId, 
     status: PENDING,
-    activeSince: undefined,
+    activatedOn: undefined,
     validTill: undefined,
-    deviceId: []
+    deviceIds: []
   }
 
   const batch = db.batch()

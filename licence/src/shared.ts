@@ -14,8 +14,8 @@ const EXPIRED = 'expired'
 
 interface Licence {
   email: string,
-  invitedOn: Timestamp,
-  acceptedOn: Timestamp | undefined,
+  invitedOn: Timestamp | undefined,
+  activatedOn: Timestamp | undefined,
   validTill: Timestamp | undefined,
   status: string
 }
@@ -29,11 +29,11 @@ interface LicenceSummary {
 
 interface TopLevelLicence {
   email: string,
-  userId: string,  
-  activeSince: Timestamp | undefined,
+  customerId: string,  
+  activatedOn: Timestamp | undefined,
   validTill: Timestamp | undefined,
   status: string,
-  deviceId: string[]
+  deviceIds: string[]
 }
 
 export { db, LicenceSummary, Licence, TopLevelLicence, SUMMARY, DB_NAME, PENDING, ASSIGNED, EXPIRED }
