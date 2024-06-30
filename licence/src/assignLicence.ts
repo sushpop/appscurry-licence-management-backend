@@ -1,18 +1,6 @@
 import { onCall } from "firebase-functions/v2/https"
-import { initializeApp } from 'firebase-admin/app'
-import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore'
-
-initializeApp();
-const DB_NAME = "appscurry-licence-management"
-const db = getFirestore(DB_NAME)
-db.settings({ ignoreUndefinedProperties: true }); // ignores undefined peroperties during serializtion
-
-const SUMMARY = 'summary'
-// const LINE_ITEM = 'line_item'
-const PENDING = 'pending'
-// const ASSIGNED = 'assigned'
-// const EXPIRED = 'expired'
-// const AVAILABLE_LICENCE_COUNT = "available"
+import { FieldValue, Timestamp } from 'firebase-admin/firestore'
+import { db, LicenceSummary, Licence, SUMMARY, TopLevelLicence, PENDING } from "./shared"
 
 export const assignLicence = onCall( async (request) => {
 
@@ -69,29 +57,38 @@ async function processInvitation(invitation: Invitation, userId: string) {
     validTill: undefined
   }
 
+  const topLevelLicenceData : TopLevelLicence = {
+    email: invitation.email,
+    userId: userId, 
+    status: PENDING,
+    activeSince: undefined,
+    validTill: undefined,
+    deviceId: []
+  }
+
   const batch = db.batch()
 
-  // Create document in customers/lincence scope
+  // This will thow error if email already exists
   const customersLicenceRef = db.collection('customers').doc(userId).collection('licence').doc(invitation.email)
   batch.create(customersLicenceRef, licenceData)
 
-  // Create document in licence collection
-  const licenceRef = db.collection('licence').doc(invitation.email)
-  batch.create(licenceRef, licenceData)
+  // This will thow error if email already exists
+  const licenceRef = db.collection('topLevelLicence').doc(invitation.email)
+  batch.create(licenceRef, topLevelLicenceData)
 
-  // Decrement Licence count  
+  // Decrement available Licence count  
   const lincenceSummary: LicenceSummary = {
     available: FieldValue.increment(-1),
     pending: FieldValue.increment(1),
     active: undefined,
     docType: SUMMARY
-  } // undefined fields will not be inserted into db because ignoreUndefinedProperties is set to true
+  } 
+  
+  // undefined fields will not be inserted into db because ignoreUndefinedProperties is set to true  
   const customerLicencesSummaryRef = db.collection('customers').doc(userId).collection('licence').doc('summary')      
   batch.set(customerLicencesSummaryRef, lincenceSummary, {merge: true})
 
-  // Commit the batch
   await batch.commit()
-
 }
 
 // TODO: Fill in the blanks
@@ -107,20 +104,4 @@ interface Invitation {
 
 interface InvitationRequest {
   records: Invitation[];
-}
-
-
-interface Licence {
-  email: string;
-  invitedOn: Timestamp;
-  acceptedOn: Timestamp | undefined;
-  validTill: Timestamp | undefined;
-  status: string;
-}
-
-interface LicenceSummary {
-  available: FieldValue | undefined,
-  pending: FieldValue | undefined,
-  active: FieldValue | undefined,
-  docType: string
 }
