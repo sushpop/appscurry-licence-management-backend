@@ -107,7 +107,8 @@ async function acceptInvitation(topLevelLicence: TopLevelLicence, deviceId: stri
         validTill: Timestamp.fromDate(validTill),
         status: ASSIGNED
       }
-  
+      
+      topLevelLicence.status = ASSIGNED
       topLevelLicence.activatedOn = Timestamp.fromDate(currentDate)
       topLevelLicence.validTill = Timestamp.fromDate(validTill)       
     } else {
@@ -120,15 +121,15 @@ async function acceptInvitation(topLevelLicence: TopLevelLicence, deviceId: stri
         status: ASSIGNED
       }
       // Do not need to update the existing values
+      topLevelLicence.status = undefined
       topLevelLicence.activatedOn = undefined 
       topLevelLicence.validTill = undefined 
     }
     
     // Only if the device id is new, append it to the list
     if(isNewDevice) {
-      topLevelLicence.deviceIds.push(deviceId)
-    }
-    topLevelLicence.status = ASSIGNED   
+      topLevelLicence.deviceIds.push(deviceId)      
+    }       
     
     // Decrement available Licence count  
     const lincenceSummary: LicenceSummary = {

@@ -32,7 +32,7 @@ interface TopLevelLicence {
   customerId: string,  
   activatedOn: Timestamp | undefined,
   validTill: Timestamp | undefined,
-  status: string,
+  status: string | undefined,
   deviceIds: string[]
 }
 
